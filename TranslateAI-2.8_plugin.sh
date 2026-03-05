@@ -1,7 +1,7 @@
 #!/bin/sh
 #############################################
 # AISubtitles Plugin Installer for Enigma2
-# Version: 2.7
+# Version: 2.8
 # Author: HAMDY_AHMED
 ############################################
 
