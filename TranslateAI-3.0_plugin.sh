@@ -1,9 +1,9 @@
 #!/bin/sh
 #############################################
 # AISubtitles Plugin Installer for Enigma2
-# Version: 3.1
+# Version: 3.0
 # Author: HAMDY_AHMED
-# Improved: Added automatic Enigma2 restart after successful installation
+# Improved: Added Enigma2 restart after successful installation
 ############################################
 
 # Color definitions
@@ -18,7 +18,7 @@ NC='\033[0m' # No Color
 
 # Script configuration
 PLUGIN_NAME="AISubtitles"
-VERSION="3.1"
+VERSION="3.0"
 GITHUB_RAW="https://raw.githubusercontent.com/Ham-ahmed/63/refs/heads/main"
 # Try different possible package names
 PACKAGE_NAMES="${PLUGIN_NAME}-${VERSION}.tar.gz ${PLUGIN_NAME}.tar.gz ${PLUGIN_NAME}_${VERSION}.tar.gz plugin.tar.gz"
@@ -42,7 +42,6 @@ cleanup() {
     rm -f "${TEMP_DIR}"/*.ipk "${TEMP_DIR}"/*.tar.gz 2>/dev/null
     rm -rf ./CONTROL ./control ./postinst ./preinst ./prerm ./postrm 2>/dev/null
     rm -f "${INSTALL_LOG}" 2>/dev/null
-    rm -f "${TEMP_DIR}/package_contents.txt" 2>/dev/null
     echo -e "${GREEN}✓ Cleanup completed${NC}"
 }
 
@@ -55,7 +54,6 @@ print_banner() {
     echo -e "${WHITE}                    ${PLUGIN_NAME} Plugin Installer v${VERSION}                    ${NC}"
     echo -e "${CYAN}══════════════════════════════════════════════════════════════════${NC}"
     echo -e "${WHITE}                    Developer: HAMDY_AHMED                         ${NC}"
-    echo -e "${WHITE}                    Facebook: AISubtitles Support Group            ${NC}"
     echo -e "${CYAN}══════════════════════════════════════════════════════════════════${NC}"
     echo ""
 }
@@ -349,8 +347,8 @@ install_package() {
     fi
     
     # Count installed files
-    FILE_COUNT=$(find "${PLUGIN_DIR}" -type f 2>/dev/null | wc -l)
-    DIR_COUNT=$(find "${PLUGIN_DIR}" -type d 2>/dev/null | wc -l)
+    FILE_COUNT=$(find "${PLUGIN_DIR}" -type f | wc -l)
+    DIR_COUNT=$(find "${PLUGIN_DIR}" -type d | wc -l)
     echo -e "${GREEN}✓ Installation completed (${FILE_COUNT} files in ${DIR_COUNT} directories)${NC}"
 }
 
@@ -365,8 +363,8 @@ show_completion() {
     echo -e "${WHITE}   Plugin:     ${CYAN}${PLUGIN_NAME}${NC}"
     echo -e "${WHITE}   Version:    ${CYAN}${VERSION}${NC}"
     echo -e "${WHITE}   Location:   ${YELLOW}${PLUGIN_DIR}${NC}"
-    echo -e "${WHITE}   Files:      ${YELLOW}$(find ${PLUGIN_DIR} -type f 2>/dev/null | wc -l) files${NC}"
-    echo -e "${WHITE}   Directories:${YELLOW}$(find ${PLUGIN_DIR} -type d 2>/dev/null | wc -l) dirs${NC}"
+    echo -e "${WHITE}   Files:      ${YELLOW}$(find ${PLUGIN_DIR} -type f | wc -l) files${NC}"
+    echo -e "${WHITE}   Directories:${YELLOW}$(find ${PLUGIN_DIR} -type d | wc -l) dirs${NC}"
     echo -e "${WHITE}   Developer:  ${MAGENTA}HAMDY_AHMED${NC}"
     echo -e "${WHITE}   Facebook:   ${BLUE}https://www.facebook.com/share/g/18qCRuHz26/${NC}"
     echo -e "${GREEN}══════════════════════════════════════════════════════════════════${NC}"
@@ -401,130 +399,129 @@ restart_enigma2() {
     echo -e "${YELLOW}══════════════════════════════════════════════════════════════════${NC}"
     echo -e "${YELLOW}              🔄 RESTARTING ENIGMA2                             ${NC}"
     echo -e "${YELLOW}══════════════════════════════════════════════════════════════════${NC}"
-    echo -e "${WHITE}   The GUI will restart to load the new plugin${NC}"
-    echo -e "${WHITE}   Please wait...${NC}"
+    echo ""
+    echo -e "${WHITE}⏳ Enigma2 will restart in 5 seconds...${NC}"
+    echo -e "${WHITE}   Press Ctrl+C to cancel restart${NC}"
     echo ""
     
     # Countdown
-    echo -e "${YELLOW}⏳ Enigma2 will restart in:${NC}"
     for i in 5 4 3 2 1; do
-        echo -ne "\r${YELLOW}   ${i} seconds... ${NC}"
+        echo -ne "\r${YELLOW}   Restarting in ${i} seconds...${NC} "
         sleep 1
     done
     echo ""
-    echo ""
     
-    echo -e "${BLUE}▶ Attempting to restart Enigma2...${NC}"
+    echo -e "${BLUE}▶ Restarting Enigma2...${NC}"
     
     # Try different methods to restart Enigma2
     local restarted=false
     
     # Method 1: init (most common in Enigma2)
     if command -v init >/dev/null 2>&1; then
-        echo -e "${BLUE}  📡 Method 1: Using init...${NC}"
+        echo -e "${BLUE}  📡 Using init method...${NC}"
         init 4
         sleep 2
         init 3
         restarted=true
-        echo -e "${GREEN}  ✓ Restart command sent via init${NC}"
+        echo -e "${GREEN}  ✓ Enigma2 restarted successfully using init${NC}"
     fi
     
     # Method 2: systemctl
     if [ "$restarted" = false ] && command -v systemctl >/dev/null 2>&1; then
-        echo -e "${BLUE}  📡 Method 2: Using systemctl...${NC}"
+        echo -e "${BLUE}  📡 Using systemctl method...${NC}"
         systemctl restart enigma2
         restarted=true
-        echo -e "${GREEN}  ✓ Restart command sent via systemctl${NC}"
+        echo -e "${GREEN}  ✓ Enigma2 restarted successfully using systemctl${NC}"
     fi
     
     # Method 3: killall
     if [ "$restarted" = false ] && command -v killall >/dev/null 2>&1; then
-        echo -e "${BLUE}  📡 Method 3: Using killall...${NC}"
+        echo -e "${BLUE}  📡 Using killall method...${NC}"
         killall enigma2
         restarted=true
-        echo -e "${GREEN}  ✓ Restart command sent via killall${NC}"
+        echo -e "${GREEN}  ✓ Enigma2 restart initiated using killall${NC}"
     fi
     
     # Method 4: init script
     if [ "$restarted" = false ] && [ -f "/etc/init.d/enigma2" ]; then
-        echo -e "${BLUE}  📡 Method 4: Using init script...${NC}"
+        echo -e "${BLUE}  📡 Using init script method...${NC}"
         /etc/init.d/enigma2 restart
         restarted=true
-        echo -e "${GREEN}  ✓ Restart command sent via init script${NC}"
+        echo -e "${GREEN}  ✓ Enigma2 restarted successfully using init script${NC}"
     fi
     
     # Method 5: wget to webif
-    if [ "$restarted" = false ] && command -v wget >/dev/null 2>&1; then
-        echo -e "${BLUE}  📡 Method 5: Using web interface...${NC}"
-        wget -qO- "http://127.0.0.1/web/powerstate?newstate=3" >/dev/null 2>&1 &
-        restarted=true
-        echo -e "${GREEN}  ✓ Restart command sent via web interface${NC}"
-    fi
-    
-    # Method 6: kill by PID
     if [ "$restarted" = false ]; then
-        echo -e "${BLUE}  📡 Method 6: Using PID...${NC}"
-        ENIGMA2_PID=$(pidof enigma2)
-        if [ -n "$ENIGMA2_PID" ]; then
-            kill -9 $ENIGMA2_PID
+        echo -e "${BLUE}  📡 Trying web interface...${NC}"
+        if command -v wget >/dev/null 2>&1; then
+            wget -qO- "http://127.0.0.1/web/powerstate?newstate=3" >/dev/null 2>&1
             restarted=true
-            echo -e "${GREEN}  ✓ Restart command sent via PID${NC}"
+            echo -e "${GREEN}  ✓ Enigma2 restart requested via web interface${NC}"
+        elif command -v curl >/dev/null 2>&1; then
+            curl -s "http://127.0.0.1/web/powerstate?newstate=3" >/dev/null 2>&1
+            restarted=true
+            echo -e "${GREEN}  ✓ Enigma2 restart requested via web interface${NC}"
         fi
     fi
     
-    echo ""
-    if [ "$restarted" = true ]; then
-        echo -e "${GREEN}✅ Enigma2 restart initiated successfully!${NC}"
-        echo -e "${WHITE}   The GUI should restart in a few moments...${NC}"
-        echo -e "${WHITE}   If it doesn't restart automatically, please restart manually.${NC}"
-    else
-        echo -e "${RED}❌ Could not restart Enigma2 automatically${NC}"
-        echo -e "${YELLOW}══════════════════════════════════════════════════════════════════${NC}"
-        echo -e "${WHITE}   Please restart Enigma2 manually using one of these methods:${NC}"
-        echo -e "${WHITE}   ${CYAN}1.${NC} Using remote: Menu → Standby/Restart → Restart Enigma2${NC}"
-        echo -e "${WHITE}   ${CYAN}2.${NC} Via Telnet/SSH: ${YELLOW}killall enigma2${NC}"
-        echo -e "${WHITE}   ${CYAN}3.${NC} Via Telnet/SSH: ${YELLOW}init 4 && sleep 2 && init 3${NC}"
-        echo -e "${YELLOW}══════════════════════════════════════════════════════════════════${NC}"
+    # Method 6: enigma2 restart command
+    if [ "$restarted" = false ] && [ -f "/usr/bin/enigma2" ]; then
+        echo -e "${BLUE}  📡 Using enigma2 restart command...${NC}"
+        /usr/bin/enigma2 --restart >/dev/null 2>&1
+        restarted=true
+        echo -e "${GREEN}  ✓ Enigma2 restart initiated${NC}"
     fi
     
-    # Don't exit immediately to allow restart to happen
-    sleep 3
+    if [ "$restarted" = false ]; then
+        echo -e "${RED}  ✗ Could not restart Enigma2 automatically${NC}"
+        echo -e "${YELLOW}  ⚠ Please restart Enigma2 manually:${NC}"
+        echo -e "${WHITE}    1. Using remote: Menu → Standby/Restart → Restart Enigma2${NC}"
+        echo -e "${WHITE}    2. Via Telnet: killall enigma2${NC}"
+        echo -e "${WHITE}    3. Via Webif: http://[box-ip]/web/powerstate?newstate=3${NC}"
+    else
+        echo ""
+        echo -e "${GREEN}══════════════════════════════════════════════════════════════════${NC}"
+        echo -e "${GREEN}              ✅ ENIGMA2 RESTARTED SUCCESSFULLY!                 ${NC}"
+        echo -e "${GREEN}══════════════════════════════════════════════════════════════════${NC}"
+        echo -e "${WHITE}   The plugin ${CYAN}${PLUGIN_NAME}${WHITE} should now appear in extensions${NC}"
+        echo -e "${WHITE}   Press OK/Blue button to access plugins${NC}"
+        echo -e "${GREEN}══════════════════════════════════════════════════════════════════${NC}"
+    fi
 }
 
 # ==============================
 # Function: Ask for restart
-# ==============================
+# =============================
 ask_for_restart() {
     echo ""
-    echo -e "${CYAN}══════════════════════════════════════════════════════════════════${NC}"
-    echo -e "${WHITE}              🔄 RESTART OPTION                                  ${NC}"
-    echo -e "${CYAN}══════════════════════════════════════════════════════════════════${NC}"
-    echo -e "${WHITE}   To activate the plugin, Enigma2 needs to restart${NC}"
-    echo -e "${WHITE}   You can restart now or later manually${NC}"
+    echo -e "${YELLOW}══════════════════════════════════════════════════════════════════${NC}"
+    echo -e "${YELLOW}              🔄 ENIGMA2 RESTART OPTION                          ${NC}"
+    echo -e "${YELLOW}══════════════════════════════════════════════════════════════════${NC}"
+    echo -e "${WHITE}   To activate the plugin properly, Enigma2 needs to restart${NC}"
+    echo -e "${WHITE}   This will reload all plugins and apply changes${NC}"
     echo ""
+    echo -e "${CYAN}   Do you want to restart Enigma2 now?${NC}"
+    echo -e "${WHITE}   - Press ${GREEN}Y${WHITE} for Yes (recommended)${NC}"
+    echo -e "${WHITE}   - Press ${RED}N${WHITE} for No (restart manually later)${NC}"
+    echo ""
+    echo -e "${YELLOW}   Choice (y/n):${NC} \c"
     
-    # Auto-restart countdown with option to cancel
-    echo -e "${YELLOW}⏳ Auto-restart in 10 seconds. Press any key to cancel...${NC}"
-    
-    # Use read with timeout
-    if read -t 10 -r response; then
-        case "$response" in
-            [yY][eE][sS]|[yY])
-                echo -e "${GREEN}✓ Restart confirmed${NC}"
-                restart_enigma2
-                ;;
-            *)
-                echo -e "${BLUE}▶ Restart cancelled by user${NC}"
-                echo -e "${WHITE}  Please restart Enigma2 manually to use the plugin${NC}"
-                echo -e "${WHITE}  Manual restart command: ${YELLOW}killall enigma2${NC}"
-                ;;
-        esac
-    else
-        # Timeout occurred, auto-restart
-        echo ""
-        echo -e "${GREEN}✓ Auto-restart triggered${NC}"
-        restart_enigma2
-    fi
+    read -r response
+    case "$response" in
+        [yY][eE][sS]|[yY]|"")
+            restart_enigma2
+            ;;
+        [nN][oO]|[nN])
+            echo -e "${BLUE}▶ Restart cancelled by user${NC}"
+            echo -e "${WHITE}  Please restart Enigma2 manually to activate the plugin${NC}"
+            echo -e "${WHITE}  To restart manually: killall enigma2${NC}"
+            echo -e "${WHITE}  Or use: init 4; init 3${NC}"
+            ;;
+        *)
+            echo -e "${RED}  ✗ Invalid choice${NC}"
+            echo -e "${YELLOW}  ⚠ Please restart Enigma2 manually to activate the plugin${NC}"
+            ;;
+    esac
 }
 
 # ===============================
@@ -549,19 +546,17 @@ main() {
     # Show completion message
     show_completion
     
-    # Ask for restart
+    # Ask for restart confirmation
     ask_for_restart
     
-    # Final message
+    # Final cleanup
+    echo -e "${BLUE}▶ Final cleanup...${NC}"
+    rm -f "${TEMP_DIR}/package_contents.txt" 2>/dev/null
+    
     echo ""
     echo -e "${GREEN}══════════════════════════════════════════════════════════════════${NC}"
-    echo -e "${GREEN}              🎉 INSTALLATION PROCESS COMPLETE!                   ${NC}"
+    echo -e "${GREEN}              🎉 INSTALLATION PROCESS COMPLETED!                  ${NC}"
     echo -e "${GREEN}══════════════════════════════════════════════════════════════════${NC}"
-    echo -e "${WHITE}   Thank you for installing ${CYAN}${PLUGIN_NAME}${WHITE} plugin${NC}"
-    echo -e "${WHITE}   For support, visit our Facebook group${NC}"
-    echo -e "${WHITE}   ${BLUE}https://www.facebook.com/share/g/18qCRuHz26/${NC}"
-    echo -e "${GREEN}══════════════════════════════════════════════════════════════════${NC}"
-    echo ""
     
     exit 0
 }
